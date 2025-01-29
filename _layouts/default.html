@@ -7,6 +7,7 @@
     {% if site.google_analytics and jekyll.environment == 'production' %}
     {% include google-analytics.html %}
     {% endif %}
+    <link rel="preload" href="{{ '/assets/js/presets.json' | relative_url }}" as="fetch" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ '/assets/css/styles.css' | relative_url }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     {% seo %}

@@ -1,0 +1,179 @@
+{
+  "presets": [
+    {
+      "name": "Beef (Post Sous Vide Sear)",
+      "temperature": 450,
+      "powerLevel": "High"
+    },
+    {
+      "name": "Carrots (Caramelize)",
+      "temperature": 300,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Carrots (Sautéd)",
+      "temperature": 266,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Chicken (Stir Fry)",
+      "temperature": 425,
+      "powerLevel": "High"
+    },
+    {
+      "name": "Chocolate: Dark (Temper)",
+      "temperature": 90,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Chocolate: Milk (Temper)",
+      "temperature": 88,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Chocolate: White (Temper)",
+      "temperature": 86,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Cranberry Sauce",
+      "temperature": 220,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Crème Anglaise",
+      "temperature": 178,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Crêpes",
+      "temperature": 285,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Curry Paste (Fry)",
+      "temperature": 350,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Donuts",
+      "temperature": 350,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Egg (Poached)",
+      "temperature": 183,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Eggs (Fried)",
+      "temperature": 248,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Eggs (Pasteurized)",
+      "temperature": 131,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Eggs (Slow Scrambled)",
+      "temperature": 175,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Garlic (Browned)",
+      "temperature": 248,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Ice Cream Base",
+      "temperature": 180,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Nuts (Toasted)",
+      "temperature": 248,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Pancakes",
+      "temperature": 332,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Scallops (Sear)",
+      "temperature": 450,
+      "powerLevel": "High"
+    },
+    {
+      "name": "Shrimp (Stir Fry)",
+      "temperature": 425,
+      "powerLevel": "High"
+    },
+    {
+      "name": "Spices (Toasted)",
+      "temperature": 284,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Tea: Black",
+      "temperature": 212,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Tea: Green",
+      "temperature": 176,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Tea: Herbal",
+      "temperature": 203,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Tea: Oolong",
+      "temperature": 194,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Tea: White",
+      "temperature": 185,
+      "powerLevel": "Low"
+    },
+    {
+      "name": "Candy: Thread Stage",
+      "temperature": 230,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Soft Ball",
+      "temperature": 235,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Firm Ball",
+      "temperature": 245,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Hard Ball",
+      "temperature": 250,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Soft Crack",
+      "temperature": 270,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Hard Crack",
+      "temperature": 300,
+      "powerLevel": "Medium"
+    },
+    {
+      "name": "Candy: Caramel",
+      "temperature": 320,
+      "powerLevel": "Medium"
+    }
+  ]
+} 

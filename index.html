@@ -18,6 +18,7 @@ title: Breville Control Freak Config Editor
     <div class="tabs">
       <button class="tab-btn active" data-tab="programs">Programs</button>
       <button class="tab-btn" data-tab="alarms">Alarms</button>
+      <button class="tab-btn" data-tab="presets">Presets</button>
     </div>
 
     <div id="programs" class="tab-content active">
@@ -47,6 +48,43 @@ title: Breville Control Freak Config Editor
         <button id="add-alarm" class="btn-add">Add Alarm</button>
       </div>
     </div>
+
+    <div id="presets" class="tab-content">
+      <div class="header">
+        <div class="col col-name">Name</div>
+        <div class="col col-temp">Temp (°F)</div>
+        <div class="col col-power">Power Level</div>
+        <div class="col col-timer">Timer</div>
+        <div class="col col-timer-start">Timer Start</div>
+        <div class="col col-after-timer">After Timer</div>
+        <div class="col col-actions">Actions</div>
+      </div>
+      <div id="preset-list" class="entry-list">
+        <!-- Presets will be loaded here dynamically -->
+      </div>
+      <div class="preset-citations">
+        <p class="citation-note">Preset temperatures and settings are sourced from:</p>
+        <ul>
+          <li><a href="https://blog.thermoworks.com/how-to-make-caramel/" target="_blank">https://blog.thermoworks.com/how-to-make-caramel/</a></li>
+          <li><a href="https://www.sizzleandsear.com/precisioncooking/" target="_blank">https://www.sizzleandsear.com/precisioncooking/</a></li>
+        </ul>
+        <p class="citation-disclaimer">Note: These are suggested starting points. Adjust based on your specific needs and equipment.</p>
+      </div>
+    </div>
+    
+    <template id="preset-template">
+      <div class="preset-entry">
+        <div class="col col-name"></div>
+        <div class="col col-temp"></div>
+        <div class="col col-power"></div>
+        <div class="col col-timer"></div>
+        <div class="col col-timer-start"></div>
+        <div class="col col-after-timer"></div>
+        <div class="col col-actions">
+          <button class="btn-add-preset">+</button>
+        </div>
+      </div>
+    </template>
 
     <div class="bottom-controls">
       <button id="generate-fa1" class="btn-generate">Generate</button>

@@ -9,12 +9,9 @@ class FA1Parser {
         this.PROGRAM_NAME_LENGTH = 26;
         this.ALARM_NAME_LENGTH = 20;
         this.TEMP_MOD = 255;
-        console.log('FA1Parser initialized');
     }
 
     async parseFA1File(file) {
-        console.log(`Starting to parse FA1 file: ${file.name} Size: ${file.size} bytes`);
-        
         const buffer = await file.arrayBuffer();
         const view = new DataView(buffer);
         
@@ -22,7 +19,6 @@ class FA1Parser {
         const alarms = [];
 
         // Parse programs (first 4KB)
-        console.log('Parsing programs...');
         for (let block = 0; block < 16; block++) {
             for (let entry = 0; entry < this.ENTRIES_PER_BLOCK; entry++) {
                 const offset = (block * this.BLOCK_LENGTH) + (entry * this.ENTRY_LENGTH);
@@ -32,14 +28,12 @@ class FA1Parser {
                 
                 const program = this.parseProgram(new DataView(buffer, offset, this.ENTRY_LENGTH));
                 if (program) {
-                    console.log('Found program:', program);
                     programs.push(program);
                 }
             }
         }
 
         // Parse alarms (second 4KB)
-        console.log('Parsing alarms...');
         for (let block = 16; block < 32; block++) {
             for (let entry = 0; entry < this.ENTRIES_PER_BLOCK; entry++) {
                 const offset = (block * this.BLOCK_LENGTH) + (entry * this.ENTRY_LENGTH);
@@ -49,13 +43,11 @@ class FA1Parser {
                 
                 const alarm = this.parseAlarm(new DataView(buffer, offset, this.ENTRY_LENGTH));
                 if (alarm) {
-                    console.log('Found alarm:', alarm);
                     alarms.push(alarm);
                 }
             }
         }
 
-        console.log(`Finished parsing. Found ${programs.length} programs and ${alarms.length} alarms`);
         return { programs, alarms };
     }
 
@@ -104,7 +96,6 @@ class FA1Parser {
             afterTimer
         };
         
-        console.log('Parsed program:', program);
         return program;
     }
 

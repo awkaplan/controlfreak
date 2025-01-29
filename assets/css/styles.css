@@ -287,3 +287,64 @@ body {
     float: none;
     margin-right: 0;
 }
+
+.preset-entry {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    background-color: white;
+    width: 100%;
+}
+
+.preset-entry:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+.preset-entry:hover {
+    background-color: #f8f8f8;
+}
+
+.preset-entry .col {
+    padding: 0 10px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: ellipsis;
+}
+
+.btn-add-preset {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.btn-add-preset:hover {
+    background-color: #0056b3;
+}
+
+.preset-citations {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.preset-citations .citation-note {
+    margin-bottom: 8px;
+}
+
+.preset-citations ul {
+    margin: 8px 0;
+    padding-left: 25px;
+}
+
+.preset-citations .citation-disclaimer {
+    margin-top: 8px;
+    font-style: italic;
+}

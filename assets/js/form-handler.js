@@ -3,6 +3,7 @@ class FormHandler {
         this.initializeElements();
         this.fa1Parser = new FA1Parser();
         this.fa1Generator = new FA1Generator();
+        this.loadPresets();
         this.initializeEventListeners();
     }
 
@@ -11,8 +12,10 @@ class FormHandler {
             fileInput: 'fa1-file',
             programList: 'program-list',
             alarmList: 'alarm-list',
+            presetList: 'preset-list',
             programTemplate: 'program-template',
-            alarmTemplate: 'alarm-template'
+            alarmTemplate: 'alarm-template',
+            presetTemplate: 'preset-template'
         };
 
         // Initialize all elements and throw error if any are missing
@@ -50,6 +53,11 @@ class FormHandler {
         if (clearButton) {
             clearButton.addEventListener('click', () => this.clearForm());
         }
+
+        // Add preset buttons
+        document.querySelectorAll('.btn-add-preset').forEach(btn => {
+            btn.addEventListener('click', () => this.addPresetToPrograms(btn));
+        });
     }
 
     async handleFileInput(event) {
@@ -238,25 +246,32 @@ class FormHandler {
             const timerSeconds = entry.querySelector('.timer-seconds');
             const timerStartInput = entry.querySelector('.timer-start');
             const afterTimerInput = entry.querySelector('.after-timer');
-
+    
             if (!nameInput || !tempInput || !powerInput || !timerHours || !timerMinutes || 
                 !timerSeconds || !timerStartInput || !afterTimerInput) {
                 throw new Error('Form elements not found');
             }
-
-            nameInput.value = program.name;
-            tempInput.value = program.temperature;
-            powerInput.value = program.powerLevel;
+    
+            // Set basic properties
+            nameInput.value = program.name || '';
+            tempInput.value = program.temperature || 0;
+            powerInput.value = program.powerLevel || 'Slow';
             
-            if (program.timer !== 'off') {
+            // Handle timer values with default empty values if not present
+            if (program.timer && program.timer !== 'off') {
                 const [hours, minutes, seconds] = program.timer.split(':');
-                timerHours.value = parseInt(hours);
-                timerMinutes.value = parseInt(minutes);
-                timerSeconds.value = parseInt(seconds);
+                timerHours.value = parseInt(hours) || 0;
+                timerMinutes.value = parseInt(minutes) || 0;
+                timerSeconds.value = parseInt(seconds) || 0;
+            } else {
+                timerHours.value = '';
+                timerMinutes.value = '';
+                timerSeconds.value = '';
             }
             
-            timerStartInput.value = program.timerStart;
-            afterTimerInput.value = program.afterTimer;
+            // Set timer-related properties with defaults
+            timerStartInput.value = program.timerStart || 'At Beginning';
+            afterTimerInput.value = program.afterTimer || 'Continue Cooking';
         } catch (error) {
             throw error;
         }
@@ -289,5 +304,106 @@ class FormHandler {
             // Clear file input
             this.fileInput.value = '';
         }
-    } 
+    }
+
+    async loadPresets() {
+        // Get the base URL from the meta tag or default to root
+        const baseUrl = document.querySelector('meta[name="baseurl"]')?.getAttribute('content') || '';
+        const presetUrl = `assets/js/presets.json`;
+        
+        fetch(presetUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Extract presets array from the data object
+                this.presets = data.presets || [];
+                this.renderPresets();
+            })
+            .catch(error => {
+                console.error('Error loading presets:', error);
+                // Initialize with empty array if loading fails
+                this.presets = [];
+                this.renderPresets();
+            });
+    }
+
+    renderPresets() {
+        if (!this.presetList || !this.presetTemplate) {
+            console.warn('Preset list or template elements not found');
+            return;
+        }
+        
+        this.presetList.innerHTML = '';
+        
+        if (!Array.isArray(this.presets) || this.presets.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-presets';
+            emptyMessage.textContent = 'No presets available';
+            this.presetList.appendChild(emptyMessage);
+            return;
+        }
+        
+        this.presets.forEach(preset => {
+            const entry = this.presetTemplate.content.cloneNode(true);
+            const container = entry.querySelector('.preset-entry');
+            
+            if (!container) {
+                console.warn('Preset entry container not found in template');
+                return;
+            }
+            
+            // Fill in preset data
+            container.querySelector('.col-name').textContent = preset.name || '';
+            container.querySelector('.col-temp').textContent = (preset.temperature || 0) + '°F';
+            container.querySelector('.col-power').textContent = preset.powerLevel || 'Slow';
+
+            if (preset.timer) {
+                container.querySelector('.col-timer').textContent = preset.timer;
+            }
+            if (preset.timerStart) {
+                container.querySelector('.col-timer-start').textContent = preset.timerStart;
+            }
+            if (preset.afterTimer) {
+                container.querySelector('.col-after-timer').textContent = preset.afterTimer;
+            }
+            
+            // Add click handler to the add button
+            const addButton = container.querySelector('.btn-add-preset');
+            if (addButton) {
+                addButton.addEventListener('click', () => {
+                    this.addProgram();
+                    const lastProgram = this.programList.lastElementChild;
+                    if (lastProgram) {
+                        this.populateProgramEntry(lastProgram, preset);
+                    }
+                });
+            }
+            
+            this.presetList.appendChild(container);
+        });
+    }
+
+    addPresetToPrograms(preset) {
+        this.addProgram();
+        const entry = this.programList.lastElementChild;
+        if (entry) {
+            entry.querySelector('.program-name').value = preset.name;
+            entry.querySelector('.temperature').value = preset.temperature;
+            entry.querySelector('.power-level').value = preset.powerLevel;
+            
+            if (preset.timer) {
+                const [hours, minutes, seconds] = preset.timer.split(':');
+                entry.querySelector('.timer-hours').value = parseInt(hours);
+                entry.querySelector('.timer-minutes').value = parseInt(minutes);
+                entry.querySelector('.timer-seconds').value = parseInt(seconds);
+            }
+            
+            entry.querySelector('.timer-start').value = preset.timerStart;
+            entry.querySelector('.after-timer').value = preset.afterTimer;
+        }
+    }
 }
