@@ -1,0 +1,20 @@
+title: Breville Control Freak Program Editor
+description: Create and edit Breville Control Freak programs and alarms
+baseurl: "/controlfreak"
+url: "https://awkaplan.github.io"
+domain: "awkaplan.github.io"
+repository: "awkaplan/controlfreak"
+
+# Google Analytics
+google_analytics: G-0BYR47JCKV
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

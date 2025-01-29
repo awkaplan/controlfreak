@@ -1,0 +1,11 @@
+version: '3'
+services:
+  site:
+    build: .
+    volumes:
+      - .:/app
+      - /app/vendor  # Exclude vendor directory from mounting
+    ports:
+      - "4000:4000"
+    environment:
+      - JEKYLL_ENV=development 

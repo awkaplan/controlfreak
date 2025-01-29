@@ -1,0 +1,137 @@
+---
+layout: default
+title: Breville Control Freak Config Editor
+---
+
+<div class="container">
+  <div class="input-section">
+    <div class="explanation">
+      <p>This tool allows you to create and edit programs and alarms for the Breville Control Freak induction cooktop. You can:</p>
+      <ul>
+        <li>Upload an existing FA1 file to modify its programs and alarms</li>
+        <li>Create new programs with temperature, power level, and timer settings</li>
+        <li>Add temperature alarms</li>
+        <li>Generate and download a new FA1 file compatible with your Control Freak</li>
+      </ul>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="programs">Programs</button>
+      <button class="tab-btn" data-tab="alarms">Alarms</button>
+    </div>
+
+    <div id="programs" class="tab-content active">
+      <div class="header">
+        <div class="col col-name">Name</div>
+        <div class="col col-temp">Temp °F</div>
+        <div class="col col-power">Power Level</div>
+        <div class="col col-timer">Timer</div>
+        <div class="col col-timer-start">Timer Start</div>
+        <div class="col col-after-timer">After Timer</div>
+        <div class="col col-actions">Actions</div>
+      </div>
+      <div id="program-list" class="entry-list"></div>
+      <div class="list-footer">
+        <button id="add-program" class="btn-add">Add Program</button>
+      </div>
+    </div>
+
+    <div id="alarms" class="tab-content">
+      <div class="header">
+        <div class="col col-name">Name</div>
+        <div class="col col-temp">Temperature (°F)</div>
+        <div class="col col-actions">Actions</div>
+      </div>
+      <div id="alarm-list" class="entry-list"></div>
+      <div class="list-footer">
+        <button id="add-alarm" class="btn-add">Add Alarm</button>
+      </div>
+    </div>
+
+    <div class="bottom-controls">
+      <button id="generate-fa1" class="btn-generate">Generate</button>
+      <div class="file-input">
+        <label for="fa1-file">Upload existing FA1 file (optional):</label>
+        <input type="file" id="fa1-file" accept=".fa1">
+      </div>
+      <button type="button" class="btn-clear">Clear</button>
+    </div>
+  </div>
+</div>
+
+<template id="program-template">
+  <div class="program-entry">
+    <span class="entry-number"></span>
+    <div class="col col-name">
+      <input type="text" class="program-name" maxlength="26" required>
+    </div>
+    <div class="col col-temp">
+      <input type="number" 
+             class="temperature" 
+             min="0" 
+             max="482" 
+             step="1" 
+             required
+             inputmode="numeric"
+             pattern="[0-9]*"
+             value="">
+    </div>
+    <div class="col col-power">
+      <select class="power-level" required>
+        <option value="Slow">Slow</option>
+        <option value="Medium">Medium</option>
+        <option value="Fast">Fast</option>
+        <option value="Max">Max</option>
+      </select>
+    </div>
+    <div class="col col-timer">
+      <div class="timer-inputs">
+        <input type="number" class="timer-hours" min="0" max="72" value="">
+        <span>:</span>
+        <input type="number" class="timer-minutes" min="0" max="59" value="">
+        <span>:</span>
+        <input type="number" class="timer-seconds" min="0" max="59" value="">
+      </div>
+    </div>
+    <div class="col col-timer-start">
+      <select class="timer-start" required>
+        <option value="At Beginning">At Beginning</option>
+        <option value="At Set Temperature">At Set Temperature</option>
+        <option value="At Prompt">At Prompt</option>
+      </select>
+    </div>
+    <div class="col col-after-timer">
+      <select class="after-timer" required>
+        <option value="Continue Cooking">Continue Cooking</option>
+        <option value="Stop Cooking">Stop Cooking</option>
+        <option value="Keep Warm">Keep Warm</option>
+        <option value="Repeat Timer">Repeat Timer</option>
+      </select>
+    </div>
+    <div class="col col-actions">
+      <button class="btn-remove">Remove</button>
+    </div>
+  </div>
+</template>
+
+<template id="alarm-template">
+  <div class="alarm-entry">
+    <div class="col col-name">
+      <input type="text" class="alarm-name" maxlength="20" required>
+    </div>
+    <div class="col col-temp">
+      <input type="number" 
+             class="temperature" 
+             min="0" 
+             max="482" 
+             step="1" 
+             required
+             inputmode="numeric"
+             pattern="[0-9]*"
+             value="">
+    </div>
+    <div class="col col-actions">
+      <button class="btn-remove">Remove</button>
+    </div>
+  </div>
+</template> 

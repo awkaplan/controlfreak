@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }}</title>
+    {% if site.google_analytics and jekyll.environment == 'production' %}
+    {% include google-analytics.html %}
+    {% endif %}
+    <link rel="stylesheet" href="{{ '/assets/css/styles.css' | relative_url }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% seo %}
+</head>
+<body>
+    {% include header.html %}
+    
+    {{ content }}
+    
+    {% include footer.html %}
+    
+    <script src="{{ '/assets/js/fa1-parser.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/fa1-generator.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/form-handler.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
+</body>
+</html>
