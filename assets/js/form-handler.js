@@ -238,6 +238,15 @@ class FormHandler {
         });
     }
 
+    trackEvent(action, label) {
+        if (typeof gtag === 'function') {
+            gtag('event', action, {
+                'event_category': 'engagement',
+                'event_label': label
+            });
+        }
+    }
+
     generateFA1() {
         const programs = Array.from(this.programList.children).map(entry => this.getProgramData(entry));
         const alarms = Array.from(this.alarmList.children).map(entry => this.getAlarmData(entry));
@@ -247,6 +256,7 @@ class FormHandler {
             return;
         }
 
+        this.trackEvent('generate', `Programs: ${programs.length}, Alarms: ${alarms.length}`);
         this.fa1Generator.downloadFA1File(programs, alarms);
     }
 
@@ -543,6 +553,8 @@ class FormHandler {
 
     async shareURL() {
         const currentURL = window.location.href;
+        
+        this.trackEvent('share_config', 'Share URL');
         
         if (navigator.share) {
             try {
