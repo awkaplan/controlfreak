@@ -5,6 +5,7 @@ class FormHandler {
         this.fa1Generator = new FA1Generator();
         this.loadPresets();
         this.initializeEventListeners();
+        this.initializeFromURL();
     }
 
     initializeElements() {
@@ -26,38 +27,40 @@ class FormHandler {
     }
 
     initializeEventListeners() {
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(btn => 
-            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab)));
+        // Tab and file handling
+        this.setupTabListeners();
+        this.setupFileListener();
 
-        // File handling
-        this.fileInput.addEventListener('change', e => 
-            this.handleFileInput(e).catch(error => alert('Error handling file: ' + error.message)));
-
-        // Button actions
-        const buttons = {
+        // Button actions with consistent setup
+        const buttonHandlers = {
             'add-program': () => this.addProgram(),
             'add-program-bottom': () => this.addProgram(),
             'add-alarm': () => this.addAlarm(),
             'add-alarm-bottom': () => this.addAlarm(),
-            'generate-fa1': () => this.generateFA1()
+            'generate-fa1': () => this.generateFA1(),
+            'btn-clear': () => this.clearForm(),
+            'btn-share': () => this.shareURL()
         };
 
-        Object.entries(buttons).forEach(([id, handler]) => {
-            const btn = document.getElementById(id);
-            if (btn) btn.addEventListener('click', handler);
+        Object.entries(buttonHandlers).forEach(([selector, handler]) => {
+            const elements = document.querySelectorAll(`.${selector}, #${selector}`);
+            elements.forEach(el => el.addEventListener('click', handler));
         });
 
-        // Clear button
-        const clearButton = document.querySelector('.btn-clear');
-        if (clearButton) {
-            clearButton.addEventListener('click', () => this.clearForm());
-        }
-
-        // Add preset buttons
+        // Preset buttons
         document.querySelectorAll('.btn-add-preset').forEach(btn => {
             btn.addEventListener('click', () => this.addPresetToPrograms(btn));
         });
+    }
+
+    setupTabListeners() {
+        document.querySelectorAll('.tab-btn').forEach(btn => 
+            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab)));
+    }
+
+    setupFileListener() {
+        this.fileInput?.addEventListener('change', e => 
+            this.handleFileInput(e).catch(error => this.showError('Error handling file:', error)));
     }
 
     async handleFileInput(event) {
@@ -90,6 +93,8 @@ class FormHandler {
                     this.populateAlarmEntry(entry, alarm);
                 }
             });
+
+            this.updateURL();
         } catch (error) {
             alert('Error reading FA1 file: ' + error.message);
         }
@@ -105,97 +110,132 @@ class FormHandler {
     }
 
     addEntry(type) {
-        const template = type === 'program' ? this.programTemplate : this.alarmTemplate;
-        const list = type === 'program' ? this.programList : this.alarmList;
-        const entryClass = `${type}-entry`;
+        const config = {
+            program: { template: this.programTemplate, list: this.programList },
+            alarm: { template: this.alarmTemplate, list: this.alarmList }
+        }[type];
 
-        const entry = template.content.cloneNode(true).querySelector(`.${entryClass}`);
+        if (!config) return;
+
+        const entry = config.template.content.cloneNode(true).querySelector(`.${type}-entry`);
         if (!entry) return;
 
-        // Add remove button handler
-        entry.querySelector('.btn-remove').addEventListener('click', () => entry.remove());
+        // Setup remove button
+        entry.querySelector('.btn-remove')?.addEventListener('click', () => {
+            entry.remove();
+            this.updateURL();
+        });
 
-        // Add validations
+        // Setup validations and URL updates
+        this.setupEntryValidation(entry, type);
+        
+        config.list.appendChild(entry);
+        this.updateURL();
+    }
+
+    addProgram() {
+        this.addEntry('program');
+    }
+    
+    addAlarm() {
+        this.addEntry('alarm');
+    }
+
+    setupEntryValidation(entry, type) {
+        // Add input listeners for URL updates
+        entry.querySelectorAll('input, select').forEach(element => {
+            ['input', 'change', 'blur'].forEach(event => {
+                element.addEventListener(event, () => this.updateURL());
+            });
+        });
+
+        // Temperature validation
         const tempInput = entry.querySelector('.temperature');
-        this.addTemperatureValidation(tempInput);
+        if (tempInput) {
+            this.addTemperatureValidation(tempInput);
+        }
 
+        // Timer validation for programs
         if (type === 'program') {
             const timerInputs = {
                 hours: entry.querySelector('.timer-hours'),
                 minutes: entry.querySelector('.timer-minutes'),
                 seconds: entry.querySelector('.timer-seconds')
             };
-            this.addTimerValidation(timerInputs);
+            if (Object.values(timerInputs).every(Boolean)) {
+                this.addTimerValidation(timerInputs);
+            }
         }
-
-        list.appendChild(entry);
     }
 
-    addProgram() {
-        this.addEntry('program');
-    }
-
-    addAlarm() {
-        this.addEntry('alarm');
-    }
-
-    // Add helper method for temperature validation
+    // Simplified validation methods
     addTemperatureValidation(input) {
-        input.addEventListener('blur', () => {
+        const validate = () => {
             const value = parseInt(input.value);
-            if (isNaN(value) || value < 0) input.value = 0;
-            if (value > 482) input.value = 482;
-        });
+            input.value = isNaN(value) ? 0 : Math.max(0, Math.min(482, value));
+            this.updateURL();
+        };
+        ['blur', 'change'].forEach(event => input.addEventListener(event, validate));
     }
 
-    // Add new method for timer validation
-    addTimerValidation(timerInputs) {
-        const validateTimer = () => {
-            // Get values, but don't default to 0 yet
-            let hours = timerInputs.hours.value === '' ? '' : parseInt(timerInputs.hours.value);
-            let minutes = timerInputs.minutes.value === '' ? '' : parseInt(timerInputs.minutes.value);
-            let seconds = timerInputs.seconds.value === '' ? '' : parseInt(timerInputs.seconds.value);
+    addTimerValidation(inputs) {
+        const validate = () => {
+            const programEntry = inputs.hours.closest('.program-entry');
+            const timerStartSelect = programEntry.querySelector('.timer-start');
+            const afterTimerSelect = programEntry.querySelector('.after-timer');
+            
+            // Check if any timer-related values are set
+            const timerValues = [
+                ...Object.values(inputs).map(input => input.value),
+                timerStartSelect.value,
+                afterTimerSelect.value
+            ];
+            const hasAnyTimerValue = timerValues.some(Boolean);
 
-            // Check if all fields are empty
-            const allEmpty = [hours, minutes, seconds].every(val => val === '');
-            if (allEmpty) {
-                return; // Leave all fields empty
+            if (!hasAnyTimerValue) {
+                // Clear all timer-related fields if no values are set
+                Object.values(inputs).forEach(input => input.value = '');
+                timerStartSelect.value = '';
+                afterTimerSelect.value = '';
+                return;
             }
 
-            // If any field has a value, ensure all fields have numeric values
-            hours = isNaN(hours) ? 0 : hours;
-            minutes = isNaN(minutes) ? 0 : minutes;
-            seconds = isNaN(seconds) ? 0 : seconds;
+            // Set defaults for timer fields and selects
+            Object.values(inputs).forEach(input => input.value = input.value || '0');
+            timerStartSelect.value = timerStartSelect.value || 'At Beginning';
+            afterTimerSelect.value = afterTimerSelect.value || 'Continue Cooking';
 
-            // Convert everything to seconds to check total time
+            // Calculate and validate total time
+            let [hours, minutes, seconds] = Object.values(inputs)
+                .map(input => parseInt(input.value));
+                
             const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-            const maxSeconds = 72 * 3600; // 72 hours in seconds
+            const maxSeconds = 72 * 3600;
 
             if (totalSeconds > maxSeconds) {
-                hours = 72;
-                minutes = 0;
-                seconds = 0;
+                [hours, minutes, seconds] = [72, 0, 0];
+            } else {
+                hours = Math.min(72, hours);
+                minutes = hours === 72 ? 0 : Math.min(59, minutes);
+                seconds = hours === 72 ? 0 : Math.min(59, seconds);
             }
 
-            // Ensure individual fields are within bounds
-            if (hours > 72) hours = 72;
-            if (hours === 72) {
-                minutes = 0;
-                seconds = 0;
-            }
-            if (minutes > 59) minutes = 59;
-            if (seconds > 59) seconds = 59;
+            // Update input values
+            inputs.hours.value = hours;
+            inputs.minutes.value = minutes;
+            inputs.seconds.value = seconds;
 
-            // Update the input fields
-            timerInputs.hours.value = hours;
-            timerInputs.minutes.value = minutes;
-            timerInputs.seconds.value = seconds;
+            this.updateURL();
         };
 
-        // Add blur event listeners to all timer inputs
-        timerInputs.hours.addEventListener('blur', validateTimer);
-        timerInputs.minutes.addEventListener('blur', validateTimer);
-        timerInputs.seconds.addEventListener('blur', validateTimer);
+        // Add event listeners to all relevant fields
+        [...Object.values(inputs), 
+         inputs.hours.closest('.program-entry').querySelector('.timer-start'),
+         inputs.hours.closest('.program-entry').querySelector('.after-timer')
+        ].forEach(element => {
+            ['blur', 'change'].forEach(event => 
+                element.addEventListener(event, validate));
+        });
     }
 
     generateFA1() {
@@ -212,13 +252,18 @@ class FormHandler {
 
     // Helper methods for getting form data
     getProgramData(entry) {
+        const tempValue = entry.querySelector('.temperature').value;
+        const powerLevel = entry.querySelector('.power-level').value;
+        const timerStart = entry.querySelector('.timer-start').value;
+        const afterTimer = entry.querySelector('.after-timer').value;
+
         return {
             name: entry.querySelector('.program-name').value,
-            temperature: parseInt(entry.querySelector('.temperature').value),
-            powerLevel: entry.querySelector('.power-level').value,
+            temperature: tempValue === '' ? undefined : parseInt(tempValue),
+            powerLevel: powerLevel === '' ? undefined : powerLevel,
             timer: this.getTimerString(entry),
-            timerStart: entry.querySelector('.timer-start').value,
-            afterTimer: entry.querySelector('.after-timer').value
+            timerStart: timerStart === '' ? undefined : timerStart,
+            afterTimer: afterTimer === '' ? undefined : afterTimer
         };
     }
 
@@ -230,10 +275,17 @@ class FormHandler {
     }
 
     getTimerString(entry) {
-        const hours = entry.querySelector('.timer-hours').value.padStart(2, '0');
-        const minutes = entry.querySelector('.timer-minutes').value.padStart(2, '0');
-        const seconds = entry.querySelector('.timer-seconds').value.padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+        const hours = entry.querySelector('.timer-hours').value;
+        const minutes = entry.querySelector('.timer-minutes').value;
+        const seconds = entry.querySelector('.timer-seconds').value;
+        
+        // If all timer fields are empty, return undefined
+        if (!hours && !minutes && !seconds) {
+            return undefined;
+        }
+        
+        // Otherwise format the timer string
+        return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
     }
 
     populateProgramEntry(entry, program) {
@@ -252,26 +304,30 @@ class FormHandler {
                 throw new Error('Form elements not found');
             }
     
-            // Set basic properties
+            // Set name (required field)
             nameInput.value = program.name || '';
-            tempInput.value = program.temperature || 0;
-            powerInput.value = program.powerLevel || 'Slow';
             
-            // Handle timer values with default empty values if not present
+            // Set temperature (leave blank if not set)
+            tempInput.value = program.temperature !== undefined ? program.temperature : '';
+            
+            // Set power level (leave unselected if not set)
+            powerInput.value = program.powerLevel || '';
+            
+            // Handle timer values
             if (program.timer && program.timer !== 'off') {
                 const [hours, minutes, seconds] = program.timer.split(':');
-                timerHours.value = parseInt(hours) || 0;
-                timerMinutes.value = parseInt(minutes) || 0;
-                timerSeconds.value = parseInt(seconds) || 0;
+                timerHours.value = hours || '';
+                timerMinutes.value = minutes || '';
+                timerSeconds.value = seconds || '';
             } else {
                 timerHours.value = '';
                 timerMinutes.value = '';
                 timerSeconds.value = '';
             }
             
-            // Set timer-related properties with defaults
-            timerStartInput.value = program.timerStart || 'At Beginning';
-            afterTimerInput.value = program.afterTimer || 'Continue Cooking';
+            // Set timer start and after timer (leave unselected if not set)
+            timerStartInput.value = program.timerStart || '';
+            afterTimerInput.value = program.afterTimer || '';
         } catch (error) {
             throw error;
         }
@@ -295,14 +351,10 @@ class FormHandler {
 
     clearForm() {
         if (confirm('Are you sure you want to clear all form data?')) {
-            // Clear program list
             this.programList.innerHTML = '';
-            
-            // Clear alarm list
             this.alarmList.innerHTML = '';
-            
-            // Clear file input
             this.fileInput.value = '';
+            this.updateURL();
         }
     }
 
@@ -375,11 +427,7 @@ class FormHandler {
             const addButton = container.querySelector('.btn-add-preset');
             if (addButton) {
                 addButton.addEventListener('click', () => {
-                    this.addProgram();
-                    const lastProgram = this.programList.lastElementChild;
-                    if (lastProgram) {
-                        this.populateProgramEntry(lastProgram, preset);
-                    }
+                    this.addPresetToPrograms(preset);
                 });
             }
             
@@ -404,6 +452,154 @@ class FormHandler {
             
             entry.querySelector('.timer-start').value = preset.timerStart;
             entry.querySelector('.after-timer').value = preset.afterTimer;
+            
+            // Update URL after adding preset
+            this.updateURL();
         }
+    }
+
+    initializeFromURL() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const compressed = params.get('d');
+
+            if (!compressed) return;
+
+            // Restore base64 padding
+            const base64Restored = compressed
+                .replace(/-/g, '+')
+                .replace(/_/g, '/')
+                .padEnd(compressed.length + ((4 - (compressed.length % 4)) % 4), '=');
+
+            // Convert base64 to uint8array
+            const binaryString = atob(base64Restored);
+            const uint8array = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                uint8array[i] = binaryString.charCodeAt(i);
+            }
+
+            // Decompress data
+            const decompressed = new TextDecoder().decode(pako.inflate(uint8array));
+            const data = JSON.parse(decompressed);
+
+            // Load programs
+            if (data.programs) {
+                data.programs.forEach(program => {
+                    this.addProgram();
+                    const entry = this.programList.lastElementChild;
+                    if (entry) {
+                        this.populateProgramEntry(entry, program);
+                    }
+                });
+            }
+
+            // Load alarms
+            if (data.alarms) {
+                data.alarms.forEach(alarm => {
+                    this.addAlarm();
+                    const entry = this.alarmList.lastElementChild;
+                    if (entry) {
+                        this.populateAlarmEntry(entry, alarm);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error parsing URL data:', error);
+        }
+    }
+
+    updateURL() {
+        try {
+            const data = {
+                programs: Array.from(this.programList.children).map(entry => this.getProgramData(entry)),
+                alarms: Array.from(this.alarmList.children).map(entry => this.getAlarmData(entry))
+            };
+
+            if (data.programs.length === 0 && data.alarms.length === 0) {
+                window.history.replaceState({}, '', window.location.pathname);
+                return;
+            }
+
+            // Convert to JSON string and compress
+            const jsonString = JSON.stringify(data);
+            const uint8array = new TextEncoder().encode(jsonString);
+            const compressed = pako.deflate(uint8array);
+            
+            // Convert to URL-safe base64
+            const base64 = btoa(String.fromCharCode.apply(null, compressed))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            // Update URL with compressed data
+            const params = new URLSearchParams();
+            params.set('d', base64);
+            const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+            window.history.replaceState({}, '', newURL);
+        } catch (error) {
+            console.error('Error updating URL:', error);
+        }
+    }
+
+    async shareURL() {
+        const currentURL = window.location.href;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Control Freak Config',
+                    text: 'Check out my Control Freak configuration',
+                    url: currentURL
+                });
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error sharing:', error);
+                    this.fallbackShare(currentURL);
+                }
+            }
+        } else {
+            this.fallbackShare(currentURL);
+        }
+    }
+
+    fallbackShare(url) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url)
+                .then(() => alert('URL copied to clipboard!'))
+                .catch(error => {
+                    console.error('Error copying to clipboard:', error);
+                    this.showFallbackPrompt(url);
+                });
+        } else {
+            this.showFallbackPrompt(url);
+        }
+    }
+
+    showFallbackPrompt(url) {
+        // Create a temporary input element
+        const tempInput = document.createElement('input');
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        
+        // Select the text
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            // Try to copy using document.execCommand
+            document.execCommand('copy');
+            alert('URL copied to clipboard!');
+        } catch (err) {
+            // If all else fails, show the URL to the user
+            prompt('Copy this URL:', url);
+        } finally {
+            // Clean up
+            document.body.removeChild(tempInput);
+        }
+    }
+
+    showError(message, error) {
+        console.error(message, error);
+        alert(`${message} ${error.message}`);
     }
 }

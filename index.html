@@ -93,6 +93,7 @@ title: Breville Control Freak Config Editor
         <input type="file" id="fa1-file" accept=".fa1">
       </div>
       <button type="button" class="btn-clear">Clear</button>
+      <button type="button" class="btn-share">Share</button>
     </div>
   </div>
 </div>
@@ -115,7 +116,7 @@ title: Breville Control Freak Config Editor
              value="">
     </div>
     <div class="col col-power">
-      <select class="power-level" required>
+      <select class="power-level" default="Fast" required>
         <option value="Slow">Slow</option>
         <option value="Medium">Medium</option>
         <option value="Fast">Fast</option>
@@ -133,6 +134,7 @@ title: Breville Control Freak Config Editor
     </div>
     <div class="col col-timer-start">
       <select class="timer-start" required>
+        <option value="" selected></option>
         <option value="At Beginning">At Beginning</option>
         <option value="At Set Temperature">At Set Temperature</option>
         <option value="At Prompt">At Prompt</option>
@@ -140,6 +142,7 @@ title: Breville Control Freak Config Editor
     </div>
     <div class="col col-after-timer">
       <select class="after-timer" required>
+        <option value="" selected></option>
         <option value="Continue Cooking">Continue Cooking</option>
         <option value="Stop Cooking">Stop Cooking</option>
         <option value="Keep Warm">Keep Warm</option>
@@ -172,4 +175,6 @@ title: Breville Control Freak Config Editor
       <button class="btn-remove">Remove</button>
     </div>
   </div>
-</template> 
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script> 
