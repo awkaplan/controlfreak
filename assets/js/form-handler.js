@@ -262,18 +262,21 @@ class FormHandler {
 
     // Helper methods for getting form data
     getProgramData(entry) {
-        const tempValue = entry.querySelector('.temperature').value;
-        const powerLevel = entry.querySelector('.power-level').value;
-        const timerStart = entry.querySelector('.timer-start').value;
-        const afterTimer = entry.querySelector('.after-timer').value;
-
+        const hours = entry.querySelector('.timer-hours').value || '0';
+        const minutes = entry.querySelector('.timer-minutes').value || '0';
+        const seconds = entry.querySelector('.timer-seconds').value || '0';
+        
+        // Only create timer string if any value is non-zero
+        const hasTimer = parseInt(hours) > 0 || parseInt(minutes) > 0 || parseInt(seconds) > 0;
+        const timer = hasTimer ? `${hours}:${minutes}:${seconds}` : 'off';
+    
         return {
             name: entry.querySelector('.program-name').value,
-            temperature: tempValue === '' ? undefined : parseInt(tempValue),
-            powerLevel: powerLevel === '' ? undefined : powerLevel,
-            timer: this.getTimerString(entry),
-            timerStart: timerStart === '' ? undefined : timerStart,
-            afterTimer: afterTimer === '' ? undefined : afterTimer
+            temperature: parseInt(entry.querySelector('.temperature').value) || 0,
+            powerLevel: entry.querySelector('.power-level').value || 'Slow',
+            timer: timer,
+            timerStart: entry.querySelector('.timer-start').value || 'At Beginning',
+            afterTimer: entry.querySelector('.after-timer').value || 'Continue Cooking'
         };
     }
 

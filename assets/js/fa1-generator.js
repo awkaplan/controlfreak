@@ -145,7 +145,8 @@ class FA1Generator {
     }
 
     parseTimer(timerStr) {
-        if (timerStr === 'off' || timerStr === 'no timer') {
+        // Handle undefined, empty string, or invalid values
+        if (!timerStr || timerStr === 'off' || timerStr === 'no timer') {
             return { hours: 0, minutes: 0, seconds: 0 };
         }
         const [hours, minutes, seconds] = timerStr.split(':').map(Number);
