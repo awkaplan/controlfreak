@@ -12,7 +12,7 @@ A browser-based tool for creating and editing programs and alarms for the Brevil
 
 ## Usage
 
-1. Visit [https://controlfreak.github.io](https://controlfreak.github.io)
+1. Visit [https://awkaplan.github.io/controlfreak/](https://awkaplan.github.io/controlfreak/)
 2. Create new programs and alarms using the interface
 3. Optionally upload an existing FA1 file to modify its contents
 4. Generate and download your new FA1 file
